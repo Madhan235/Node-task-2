@@ -67,8 +67,8 @@ RoomName: "Grand Suite",
 
 ]
 
-app.get('/', (req, res) => {
-    res.send("i'm working fine")
+app.get('/hall-data', (req, res) => {
+    res.send(hallData)
 })
 app.get("/current-details",(req,res)=>{
 
@@ -101,7 +101,8 @@ hallData.push(newHall)
 })
 
 app.put("/edit/hall/:id",(req,res)=>{
-const {id} = req.params
+    try {
+        const {id} = req.params
 let filterHall ;
 filterHall = hallData.filter((hall)=>hall.id === id)
 
@@ -110,22 +111,16 @@ filterHall = hallData.filter((hall)=>hall.id === id)
 if(filterHall[0].ifBooked === "true"){
     return res.status(400).send("Sorry, Hall already booked")
 }
-res.send(filterHall)
 
-const updatedhall = {
-            id: req.body.id,
-            numberOfSeats: req.body.numberOfSeats,
-            price: req.body.price,
-            ifBooked: req.body.ifBooked,
-            customerName: req.body.customerName,
-            date:  req.body.date,
-            startTime: req.body.startTime,
-            endTime: req.body.endTime,
-            RoomId: req.body.RoomId,
-            RoomName: req.body.RoomName}
-        // console.log(updatedhall)
+
+const updatedhall =  req.body
         hallData[id] = updatedhall
-       return res.send(hallData)
+       return res.send(hallData[id])
+
+    } catch (error) {
+        console.log(error)
+    }
+
  
 
 })

@@ -1,0 +1,7 @@
+{
+    "version":2,
+    "name":"hallbooking",
+    "build":[{"src":"index.js",
+               "use":"@version/node"}],
+     "routers":[{"src":"/(.*)","dest":"/index.js"}]
+}
