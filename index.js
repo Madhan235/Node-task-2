@@ -68,75 +68,110 @@ RoomName: "Grand Suite",
 ]
 
 app.get('/hall-data', (req, res) => {
-    res.send(hallData)
+    try {
+        //to get all the data 
+        res.send(hallData)
+    } catch (error) {
+        console.log(error);
+    }
+    
 })
 app.get("/current-details",(req,res)=>{
 
-    const {roomType } = req.query;
-    console.log(roomType)
+    try {
+        const {roomType } = req.query;
+    
     let filterRooms ;
     if(roomType){
-        filterRooms = hallData.filter((hall)=>hall.RoomName === roomType)
-return res.send(filterRooms)
+        filterRooms = hallData?.filter((hall)=>hall.RoomName === roomType)
+return res.json(filterRooms)
     }
-    return res.send(hallData)
+    return res.json("No Rooms Found")
+    } catch (error) {
+        console.log(error);
+    }
+
 })
 
 app.post("/add/hall",(req,res)=>{
-  const newHall =   {
-    id:hallData.length + 1,
-numberOfSeats: 400,
-amenities:["Ac","chairs","discolights","buffet"],
-price: 9000,
-ifBooked: "false",
-customerName: "",
-date:"",
-startTime:"",
-endTime:"",
-RoomId: 206,
-RoomName: "Grand Suite",
-} 
-hallData.push(newHall)
- res.send(hallData)
+    try {
+
+        // assume that the new Hall data form the client with the intergated form ;
+
+        // example : const { newHall } = req.query 
+
+        const newHall =   {
+            id:hallData.length + 1,
+        numberOfSeats: 400,
+        amenities:["Ac","chairs","discolights","buffet"],
+        price: 9000,
+        ifBooked: "false",
+        customerName: "",
+        date:"",
+        startTime:"",
+        endTime:"",
+        RoomId: 206,
+        RoomName: "Grand Suite",
+        } 
+        hallData.push(newHall)
+         res.json(hallData)
+    } catch (error) {
+        
+        console.log(error);
+    }
+  
 })
 
-app.put("/edit/hall/:id",(req,res)=>{
+app.put("/edit/hall/:id", (req, res) => {
     try {
-        const {id} = req.params
-let filterHall ;
-filterHall = hallData.filter((hall)=>hall.id === id)
+        const { id } = req.params;
+        const hallIndex = hallData.findIndex(hall => hall.id === id);
 
-// filter method returns a array so filterHall[0]
+        if (hallIndex === -1) {
+            return res.status(404).send("Hall not found");
+        }
 
-if(filterHall[0].ifBooked === "true"){
-    return res.status(400).send("Sorry, Hall already booked")
-}
+        if (hallData[hallIndex].ifBooked === "true") {
+            return res.status(400).send("Sorry, Hall already booked");
+        }
 
+        const updatedHall = req.body;
 
-const updatedhall =  req.body
-        hallData[id] = updatedhall
-       return res.send(hallData[id])
-
+        hallData[hallIndex] = updatedHall;
+        return res.send(hallData[hallIndex]);
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        return res.status(500).send("Internal Server Error");
     }
+});
+
+app.get("/booked-rooms", (req, res) => {
+    try {
+        let bookedHalls = hallData.filter((hall) => hall.ifBooked === "true");
+        if (bookedHalls.length === 0) {
+            return res.status(404).send("No booked halls found");
+        }
+        return res.send(bookedHalls);
+    } catch (error) {
+        console.error("Error fetching booked halls:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
 
  
 
-})
+app.get("/reg-customer", (req, res) => {
+    try {
+        let bookedHalls = hallData.filter((hall) => hall.ifBooked === "true");
+        if (bookedHalls.length === 0) {
+            return res.status(404).send("No booked halls found");
+        }
+        let registeredCustomers = bookedHalls.map((hall) => hall.customerName);
+        return res.send(registeredCustomers);
+    } catch (error) {
+        console.error("Error fetching registered customers:", error);
+        return res.status(500).send("Internal Server Error");
+    }
+});
 
-app.get("/booked-rooms",(req,res)=>{
-
-let bookedHall ;
-bookedHall = hallData.filter((hall)=>hall.ifBooked === "true")
-return res.send(bookedHall);
-})
-
-app.get("/reg-coustomer",(req,res)=>{
-    let reg_coustomer ;
-reg_coustomer = hallData.filter((hall)=>hall.ifBooked === "true")
-let reg_coustomer_name = reg_coustomer.map((val)=>val.customerName)
-  console.log(reg_coustomer_name)
-return res.send(reg_coustomer_name)
-})
 app.listen(9000,()=>console.log("server running in localhost:9000"));
